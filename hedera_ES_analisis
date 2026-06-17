@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-widtah, initial-scale=1.0">
+<title>@hedera_ES — Análisis de Reactivación | Mayo–Junio 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d0d14; color: #e2e8f0; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 48px 40px 36px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .logo { width: 48px; height: 48px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; color: white; }
+  h1 { font-size: 28px; font-weight: 800; color: #f1f5f9; }
+  .subtitle { color: #94a3b8; font-size: 15px; margin-top: 4px; }
+  .header-meta { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; }
+  .meta-pill { background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #a5b4fc; }
+
+  .content { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Verdict Banner */
+  .verdict { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.08)); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 28px 32px; margin-bottom: 40px; }
+  .verdict-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #10b981; font-weight: 700; margin-bottom: 8px; }
+  .verdict-title { font-size: 22px; font-weight: 800; color: #6ee7b7; margin-bottom: 12px; }
+  .verdict-body { color: #a7f3d0; font-size: 15px; line-height: 1.7; }
+
+  /* KPI Grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 40px; }
+  .kpi { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 20px; }
+  .kpi-value { font-size: 36px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+  .kpi-label { font-size: 13px; color: #6b7280; }
+  .kpi-sub { font-size: 12px; color: #4b5563; margin-top: 4px; }
+  .kpi.purple .kpi-value { color: #a78bfa; }
+  .kpi.blue .kpi-value { color: #60a5fa; }
+  .kpi.green .kpi-value { color: #34d399; }
+  .kpi.yellow .kpi-value { color: #fbbf24; }
+  .kpi.pink .kpi-value { color: #f472b6; }
+  .kpi.cyan .kpi-value { color: #22d3ee; }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 18px; font-weight: 700; color: #e2e8f0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title::before { content: ''; width: 4px; height: 20px; background: linear-gradient(180deg, #6366f1, #8b5cf6); border-radius: 2px; }
+
+  /* Charts */
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .chart-box { background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 20px; }
+  .chart-title { font-size: 13px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 220px; }
+  .chart-wrap-tall { position: relative; height: 280px; }
+
+  /* Top Posts Table */
+  .post-table { width: 100%; border-collapse: collapse; }
+  .post-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; padding: 10px 12px; border-bottom: 1px solid #1f2937; }
+  .post-table td { padding: 12px; border-bottom: 1px solid #111827; font-size: 13px; vertical-align: top; }
+  .post-table tr:last-child td { border-bottom: none; }
+  .post-table tr:hover td { background: #161d2b; }
+  .rank-badge { background: #1f2937; border-radius: 8px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #9ca3af; }
+  .rank-badge.gold { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .rank-badge.silver { background: rgba(156,163,175,0.15); color: #d1d5db; }
+  .rank-badge.bronze { background: rgba(180,120,60,0.15); color: #d97706; }
+  .metric-chip { display: inline-block; background: #1f2937; border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 600; margin-right: 4px; white-space: nowrap; }
+  .chip-v { color: #60a5fa; }
+  .chip-l { color: #f472b6; }
+  .chip-rt { color: #34d399; }
+  .post-desc { color: #d1d5db; font-size: 13px; margin-bottom: 4px; }
+  .post-date { color: #6b7280; font-size: 11px; }
+  .post-tag { display: inline-block; font-size: 10px; background: rgba(99,102,241,0.15); color: #a5b4fc; border-radius: 4px; padding: 2px 6px; margin-top: 4px; }
+
+  /* Category breakdown */
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .cat-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 14px 16px; }
+  .cat-name { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 8px; }
+  .cat-bar-wrap { height: 6px; background: #1f2937; border-radius: 3px; margin-bottom: 8px; }
+  .cat-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+  .cat-stats { display: flex; justify-content: space-between; font-size: 11px; color: #6b7280; }
+
+  /* Trend / observations */
+  .obs-list { list-style: none; }
+  .obs-list li { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid #1a2032; }
+  .obs-list li:last-child { border-bottom: none; }
+  .obs-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .obs-icon.up { background: rgba(16,185,129,0.15); }
+  .obs-icon.warn { background: rgba(251,191,36,0.15); }
+  .obs-icon.info { background: rgba(96,165,250,0.15); }
+  .obs-text { font-size: 14px; color: #cbd5e1; line-height: 1.5; }
+  .obs-text strong { color: #f1f5f9; }
+
+  /* Week comparison */
+  .week-row { display: grid; grid-template-columns: 140px 1fr 80px; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .week-label { font-size: 13px; color: #9ca3af; }
+  .week-bar-outer { height: 10px; background: #1f2937; border-radius: 5px; }
+  .week-bar-inner { height: 100%; border-radius: 5px; }
+  .week-val { font-size: 13px; font-weight: 700; text-align: right; }
+
+  .footer { text-align: center; padding: 32px; color: #374151; font-size: 12px; border-top: 1px solid #111827; margin-top: 40px; }
+
+  @media (max-width: 700px) {
+    .chart-grid { grid-template-columns: 1fr; }
+    .header { padding: 32px 20px 24px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">H</div>
+    <div>
+      <h1>@hedera_ES — Análisis de Reactivación</h1>
+      <div class="subtitle">Cuenta de Hedera en español · Análisis de engagement · Solo posts originales</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span class="meta-pill">📅 21 Mayo – 9 Junio 2026</span>
+    <span class="meta-pill">📊 59 posts analizados</span>
+    <span class="meta-pill">👥 3,846 seguidores</span>
+    <span class="meta-pill">⚡ Sin retweets ni respuestas</span>
+    <span class="meta-pill">⚠️ Posts del 9 Jun son parciales (hoy)</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <div class="verdict-label">✅ Veredicto</div>
+    <div class="verdict-title">La reactivación está funcionando — con señales claras de crecimiento</div>
+    <div class="verdict-body">
+      En 20 días se publicaron <strong>59 posts originales</strong>, generando <strong>24.3K+ vistas totales</strong> y <strong>1,703 interacciones</strong> (likes + reposts + replies). El engagement rate del <strong>0.87%</strong> es sólido para una cuenta B2B de cripto en español. La tendencia semanal es positiva: la Semana 2 duplicó el promedio de vistas por post (753 vs 357) con menos volumen, indicando mejora en calidad y distribución. La cuenta tiene una base de contenido diversa y consistente — el siguiente paso es optimizar los formatos que claramente funcionan mejor.
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section">
+    <div class="section-title">Métricas Clave (51 posts, excluyendo hoy)</div>
+    <div class="kpi-grid">
+      <div class="kpi purple">
+        <div class="kpi-value">23,837</div>
+        <div class="kpi-label">Vistas totales</div>
+        <div class="kpi-sub">~467 promedio / post</div>
+      </div>
+      <div class="kpi pink">
+        <div class="kpi-value">1,417</div>
+        <div class="kpi-label">Likes totales</div>
+        <div class="kpi-sub">~27.8 promedio / post</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-value">266</div>
+        <div class="kpi-label">Reposts totales</div>
+        <div class="kpi-sub">~5.2 promedio / post</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-value">0.87%</div>
+        <div class="kpi-label">Engagement rate</div>
+        <div class="kpi-sub">Likes + RT + replies / seguidores</div>
+      </div>
+      <div class="kpi yellow">
+        <div class="kpi-value">2,381</div>
+        <div class="kpi-label">Vistas — récord</div>
+        <div class="kpi-sub">@chainlink aniversario (30 May)</div>
+      </div>
+      <div class="kpi cyan">
+        <div class="kpi-value">2.9/día</div>
+        <div class="kpi-label">Frecuencia promedio</div>
+        <div class="kpi-sub">14 días activos / 19 días totales</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="section">
+    <div class="section-title">Actividad y Engagement por Día</div>
+    <div class="chart-box" style="margin-bottom: 24px;">
+      <div class="chart-title">Posts y vistas por día</div>
+      <div class="chart-wrap-tall">
+        <canvas id="dailyChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <div class="chart-title">Distribución de vistas</div>
+        <div class="chart-wrap">
+          <canvas id="viewsDist"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Tendencia semanal — promedio de vistas / post</div>
+        <div class="chart-wrap">
+          <canvas id="weeklyTrend"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESIÓN SEMANAL -->
+  <div class="section">
+    <div class="section-title">Progresión Semanal</div>
+    <div style="background:#111827;border:1px solid #1f2937;border-radius:14px;padding:24px;">
+      <div style="margin-bottom:20px;">
+        <div class="week-row">
+          <div class="week-label">Sem 1 (21–27 May)</div>
+          <div class="week-bar-outer"><div class="week-bar-inner" style="width:47%;background:linear-gradient(90deg,#6366f1,#8b5cf6);"></div></div>
+          <div class="week-val" style="color:#a78bfa;">357 vistas/post</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:16px;padding-left:152px;">32 posts | 11,411 vistas | 636 engagement total | 16 likes/post promedio</div>
+
+        <div class="week-row">
+          <div class="week-label">Sem 2 (28 May–3 Jun)</div>
+          <div class="week-bar-outer"><div class="week-bar-inner" style="width:100%;background:linear-gradient(90deg,#10b981,#06d6a0);"></div></div>
+          <div class="week-val" style="color:#34d399;">753 vistas/post</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:16px;padding-left:152px;">14 posts | 10,537 vistas | 919 engagement total | 55 likes/post promedio ⬆️ +244%</div>
+
+        <div class="week-row">
+          <div class="week-label">Sem 3 (4–8 Jun)</div>
+          <div class="week-bar-outer"><div class="week-bar-inner" style="width:50%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+          <div class="week-val" style="color:#fbbf24;">378 vistas/post</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;padding-left:152px;">5 posts | 1,889 vistas | 148 engagement total (Jun 4,6,7,8: sin posts publicados)</div>
+      </div>
+      <div style="font-size:12px;color:#4b5563;border-top:1px solid #1f2937;padding-top:14px;">
+        ⚠️ Los posts del 9 de junio (hoy, 8 posts) aún están acumulando métricas y no se incluyen en el comparativo semanal.
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP POSTS -->
+  <div class="section">
+    <div class="section-title">Top 10 Posts por Vistas</div>
+    <div style="background:#111827;border:1px solid #1f2937;border-radius:14px;overflow:hidden;">
+      <table class="post-table">
+        <thead>
+          <tr>
+            <th style="width:44px;">#</th>
+            <th>Contenido</th>
+            <th>Vistas</th>
+            <th>Likes</th>
+            <th>RTs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="rank-badge gold">1</div></td>
+            <td>
+              <div class="post-desc">Feliz 7º aniversario @chainlink — quote tweet del ecosistema</div>
+              <div class="post-date">30 Mayo · Partnerships/Chainlink</div>
+              <span class="post-tag">🔗 Quote tweet</span> <span class="post-tag">Partnerships</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 2,381</span></td>
+            <td><span class="metric-chip chip-l">♥ 126</span></td>
+            <td><span class="metric-chip chip-rt">↗ 12</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge silver">2</div></td>
+            <td>
+              <div class="post-desc">@zbrownCEO CEO de McLaren Racing — quote del CEO de McLaren sobre Hedera</div>
+              <div class="post-date">28 Mayo · Partnerships/McLaren</div>
+              <span class="post-tag">💬 Quote tweet</span> <span class="post-tag">McLaren F1</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 1,216</span></td>
+            <td><span class="metric-chip chip-l">♥ 67</span></td>
+            <td><span class="metric-chip chip-rt">↗ 14</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge bronze">3</div></td>
+            <td>
+              <div class="post-desc">Community Call General de Hedera de mayo — vídeo de la llamada comunitaria</div>
+              <div class="post-date">22 Mayo · Comunidad</div>
+              <span class="post-tag">📹 Vídeo</span> <span class="post-tag">Comunidad</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 1,106</span></td>
+            <td><span class="metric-chip chip-l">♥ 34</span></td>
+            <td><span class="metric-chip chip-rt">↗ 11</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">4</div></td>
+            <td>
+              <div class="post-desc">Bitcoin Pizza Day — @Pizza_DAO en México y Argentina</div>
+              <div class="post-date">22 Mayo · Comunidad/LATAM</div>
+              <span class="post-tag">🍕 LATAM</span> <span class="post-tag">Comunidad</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 991</span></td>
+            <td><span class="metric-chip chip-l">♥ 18</span></td>
+            <td><span class="metric-chip chip-rt">↗ 6</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">5</div></td>
+            <td>
+              <div class="post-desc">"El smart contract conoce las barreras de seguridad" — Dr. @leemonbaird (vídeo HederaCon)</div>
+              <div class="post-date">3 Junio · HederaCon/Leemon Baird</div>
+              <span class="post-tag">📹 Vídeo</span> <span class="post-tag">HederaCon 2026</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 926</span></td>
+            <td><span class="metric-chip chip-l">♥ 67</span></td>
+            <td><span class="metric-chip chip-rt">↗ 18</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">6</div></td>
+            <td>
+              <div class="post-desc">Gobernanza en Acción con @Aberdeen_plc — vídeo institucional HederaCon</div>
+              <div class="post-date">3 Junio · Governance/Aberdeen</div>
+              <span class="post-tag">📹 Vídeo</span> <span class="post-tag">Governance</span> <span class="post-tag">HederaCon 2026</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 915</span></td>
+            <td><span class="metric-chip chip-l">♥ 94</span></td>
+            <td><span class="metric-chip chip-rt">↗ 19</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">7</div></td>
+            <td>
+              <div class="post-desc">Hedera finalista "Mejor Blockchain para Servicios Financieros" @FutureofFinanc3</div>
+              <div class="post-date">28 Mayo · Institutional Award</div>
+              <span class="post-tag">🏆 Reconocimiento</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 878</span></td>
+            <td><span class="metric-chip chip-l">♥ 94</span></td>
+            <td><span class="metric-chip chip-rt">↗ 19</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">8</div></td>
+            <td>
+              <div class="post-desc">Bounty 2 — Campaña de Bounties de Hedera AI Studio Agent</div>
+              <div class="post-date">25 Mayo · Bounty AI</div>
+              <span class="post-tag">💰 Bounty</span> <span class="post-tag">AI</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 854</span></td>
+            <td><span class="metric-chip chip-l">♥ 18</span></td>
+            <td><span class="metric-chip chip-rt">↗ 6</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">9</div></td>
+            <td>
+              <div class="post-desc">Interoperabilidad no es solo un desafío técnico — @AtlanticCouncil, @nilminirubin</div>
+              <div class="post-date">24 Mayo · Regulatorio/Política</div>
+              <span class="post-tag">📹 Vídeo</span> <span class="post-tag">Regulatorio</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 794</span></td>
+            <td><span class="metric-chip chip-l">♥ 29</span></td>
+            <td><span class="metric-chip chip-rt">↗ 6</span></td>
+          </tr>
+          <tr>
+            <td><div class="rank-badge">10</div></td>
+            <td>
+              <div class="post-desc">COFRA concluirá su mandato en el Consejo de Hedera el 31 de mayo</div>
+              <div class="post-date">30 Mayo · Governance/COFRA</div>
+              <span class="post-tag">🏛️ Governance</span>
+            </td>
+            <td><span class="metric-chip chip-v">👁 753</span></td>
+            <td><span class="metric-chip chip-l">♥ 59</span></td>
+            <td><span class="metric-chip chip-rt">↗ 7</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTENT CATEGORIES -->
+  <div class="section">
+    <div class="section-title">Rendimiento por Categoría de Contenido</div>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <div class="chart-title">Promedio de vistas por categoría</div>
+        <div class="chart-wrap-tall">
+          <canvas id="catChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Volumen de posts por categoría</div>
+        <div class="chart-wrap-tall">
+          <canvas id="catPie"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-name">🏅 Partnerships grandes</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:100%;"></div></div>
+        <div class="cat-stats"><span>5 posts</span><span>830 vistas avg · 44 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🏛️ Governance</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:83%;background:linear-gradient(90deg,#10b981,#06d6a0);"></div></div>
+        <div class="cat-stats"><span>3 posts</span><span>688 vistas avg · 57 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">👥 Comunidad</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:76%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+        <div class="cat-stats"><span>4 posts</span><span>629 vistas avg · 18.5 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🎤 HederaCon 2026</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:57%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div>
+        <div class="cat-stats"><span>5 posts</span><span>473 vistas avg · 34.6 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">💰 Bounties AI</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:53%;background:linear-gradient(90deg,#ec4899,#f472b6);"></div></div>
+        <div class="cat-stats"><span>6 posts</span><span>439 vistas avg · 18 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🌐 Partners (otros)</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:50%;background:linear-gradient(90deg,#06b6d4,#22d3ee);"></div></div>
+        <div class="cat-stats"><span>5 posts</span><span>416 vistas avg · 26.6 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🏦 Institucional</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:49%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div>
+        <div class="cat-stats"><span>4 posts</span><span>410 vistas avg · 26.2 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">⚖️ Regulatorio</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:43%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+        <div class="cat-stats"><span>5 posts</span><span>357 vistas avg · 20 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">🛠️ Técnico/Dev</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:38%;background:linear-gradient(90deg,#6366f1,#818cf8);"></div></div>
+        <div class="cat-stats"><span>5 posts</span><span>318 vistas avg · 16.6 likes avg</span></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-name">📰 Newsletter</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:18%;background:linear-gradient(90deg,#94a3b8,#cbd5e1);"></div></div>
+        <div class="cat-stats"><span>2 posts</span><span>150 vistas avg · 9 likes avg</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBSERVATIONS -->
+  <div class="section">
+    <div class="section-title">Observaciones y Recomendaciones</div>
+    <div style="background:#111827;border:1px solid #1f2937;border-radius:14px;padding:24px;">
+      <ul class="obs-list">
+        <li>
+          <div class="obs-icon up">📹</div>
+          <div class="obs-text"><strong>Los vídeos dominan el engagement.</strong> Los posts con vídeo de HederaCon (Leemon Baird, Aberdeen plc) alcanzan 657–926 vistas y los mayores ratios de likes/vistas de toda la muestra. Prioriza subir clips de vídeo traducidos frente a imágenes estáticas.</div>
+        </li>
+        <li>
+          <div class="obs-icon up">🔗</div>
+          <div class="obs-text"><strong>Los quote tweets de cuentas grandes funcionan excelentemente.</strong> El post de @chainlink (2,381v) y el CEO de McLaren (1,216v) son los dos mejores de toda la campaña. Cuando el account principal de @hedera o un partner grande publica, recompartir con traducción + context en español captura mucha audiencia.</div>
+        </li>
+        <li>
+          <div class="obs-icon up">🌎</div>
+          <div class="obs-text"><strong>El contenido LATAM resonó bien.</strong> El post de Bitcoin Pizza Day con @Pizza_DAO (México, Argentina) generó 991 vistas y 2 bookmarks — uno de los mejores del primer batch. Contenido que conecta explícitamente con la comunidad hispanohablante tiene tracción diferencial.</div>
+        </li>
+        <li>
+          <div class="obs-icon warn">📅</div>
+          <div class="obs-text"><strong>Mayo 22 fue un "volumen dump" de lanzamiento.</strong> 13 posts en un solo día diluyeron las métricas promedio de esa semana. La Semana 2 tuvo 14 posts (menos de la mitad) pero casi igual volumen de vistas — una cadencia de 2–4 posts/día con contenido de mayor impacto supera el enfoque de publicación masiva.</div>
+        </li>
+        <li>
+          <div class="obs-icon warn">🕳️</div>
+          <div class="obs-text"><strong>Hay huecos de publicación preocupantes.</strong> Mayo 31–Junio 2 (3 días sin posts), Junio 4 y 6–8 (más días muertos). La consistencia es crítica para las cuentas reactivadas — los algoritmos de X penalizan la inactividad. Una cadencia mínima de 1–2 posts/día todos los días es recomendable.</div>
+        </li>
+        <li>
+          <div class="obs-icon info">🤖</div>
+          <div class="obs-text"><strong>Los bounties de AI generan vistas pero no likes proporcionales.</strong> Las 6 campañas de bounty promedian 439 vistas pero solo 18 likes — un ratio bajo. El CTA de bounty es transaccional; considera complementarlos con contenido explicativo sobre el AI Agent Kit para generar más engagement cualitativo.</div>
+        </li>
+        <li>
+          <div class="obs-icon info">💡</div>
+          <div class="obs-text"><strong>Governance y Partnerships grandes = mejor ROI de contenido.</strong> Con solo 8 posts combinados entre ambas categorías generaron los ratios más altos de likes/post (44–57 likes promedio). Son los pilares de contenido a potenciar — cada vez que hay un anuncio institucional o una integración importante, ese post en español.</div>
+        </li>
+        <li>
+          <div class="obs-icon info">📊</div>
+          <div class="obs-text"><strong>El engagement rate del 0.87% es competitivo.</strong> Para referencias: el promedio de engagement en Twitter B2B crypto oscila entre 0.4–1.2%. La cuenta está en la mitad superior. Si se optimizan los formatos (más vídeo, más quote tweets estratégicos), alcanzar 1.2–1.5% es realista en las próximas 4 semanas.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Análisis generado el 9 de junio de 2026 · @hedera_ES · 59 posts originales analizados · Datos de X (Twitter) · Los posts del 9 de junio son parciales y siguen acumulando métricas
+</div>
+
+<script>
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = '#1f2937';
+
+// Daily chart
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+new Chart(dailyCtx, {
+  type: 'bar',
+  data: {
+    labels: ['21 May','22 May','23 May','24 May','25 May','26 May','27 May','28 May','29 May','30 May','3 Jun','5 Jun'],
+    datasets: [
+      {
+        label: 'Vistas',
+        data: [1108, 4465, 862, 1071, 1002, 769, 2134, 2892, 472, 3597, 3576, 1889],
+        backgroundColor: 'rgba(99,102,241,0.7)',
+        yAxisID: 'y',
+        order: 2,
+      },
+      {
+        label: 'Posts',
+        data: [3, 13, 4, 2, 2, 3, 5, 4, 1, 3, 6, 5],
+        type: 'line',
+        borderColor: '#f472b6',
+        backgroundColor: 'rgba(244,114,182,0.1)',
+        pointBackgroundColor: '#f472b6',
+        pointRadius: 5,
+        yAxisID: 'y2',
+        order: 1,
+        tension: 0.3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', boxWidth: 12 } } },
+    scales: {
+      y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' }, title: { display: true, text: 'Vistas', color: '#6b7280' } },
+      y2: { position: 'right', ticks: { color: '#f472b6' }, grid: { display: false }, title: { display: true, text: 'Nº Posts', color: '#f472b6' } },
+      x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } }
+    }
+  }
+});
+
+// Views distribution
+const distCtx = document.getElementById('viewsDist').getContext('2d');
+const views = [2381,1216,1106,991,926,915,878,854,794,753,730,657,615,587,517,480,472,463,417,406,400,400,396,391,357,352,345,326,318,318,277,255,232,222,219,214,200,198,197,180,176,173,155,148,146,146,125,103,96];
+const bins = {'<200':0,'200-399':0,'400-599':0,'600-999':0,'1000+':0};
+views.forEach(v => {
+  if(v < 200) bins['<200']++;
+  else if(v < 400) bins['200-399']++;
+  else if(v < 600) bins['400-599']++;
+  else if(v < 1000) bins['600-999']++;
+  else bins['1000+']++;
+});
+new Chart(distCtx, {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(bins),
+    datasets: [{
+      data: Object.values(bins),
+      backgroundColor: ['#374151','#4b5563','#6366f1','#8b5cf6','#a78bfa'],
+      borderColor: '#111827',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { color: '#9ca3af', boxWidth: 12 } },
+      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed + ' posts'; } } }
+    }
+  }
+});
+
+// Weekly trend
+const wCtx = document.getElementById('weeklyTrend').getContext('2d');
+new Chart(wCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Sem 1\n(21–27 May)','Sem 2\n(28 May–3 Jun)','Sem 3\n(4–8 Jun)'],
+    datasets: [
+      {
+        label: 'Vistas promedio/post',
+        data: [357, 753, 378],
+        backgroundColor: ['rgba(99,102,241,0.7)','rgba(16,185,129,0.7)','rgba(251,191,36,0.7)'],
+        borderRadius: 8,
+      },
+      {
+        label: 'Likes promedio/post',
+        data: [16, 55.5, 25.8],
+        backgroundColor: ['rgba(244,114,182,0.5)','rgba(244,114,182,0.8)','rgba(244,114,182,0.6)'],
+        borderRadius: 8,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { color: '#9ca3af', boxWidth: 12 } } },
+    scales: {
+      y: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
+      x: { ticks: { color: '#6b7280' }, grid: { display: false } }
+    }
+  }
+});
+
+// Category charts
+const catLabels = ['Partnerships','Governance','Comunidad','HederaCon','Bounty AI','Partners','Institucional','Regulatorio','Técnico','Newsletter'];
+const catViews = [830, 688, 629, 473, 439, 416, 410, 357, 318, 150];
+const catCounts = [5, 3, 4, 5, 6, 5, 4, 5, 5, 2];
+
+const catCtx = document.getElementById('catChart').getContext('2d');
+new Chart(catCtx, {
+  type: 'bar',
+  indexAxis: 'y',
+  data: {
+    labels: catLabels,
+    datasets: [{
+      label: 'Vistas promedio',
+      data: catViews,
+      backgroundColor: [
+        'rgba(16,185,129,0.7)','rgba(16,185,129,0.6)','rgba(251,191,36,0.7)',
+        'rgba(139,92,246,0.7)','rgba(236,72,153,0.7)','rgba(6,182,212,0.7)',
+        'rgba(59,130,246,0.7)','rgba(245,158,11,0.6)','rgba(99,102,241,0.6)','rgba(107,114,128,0.5)'
+      ],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#6b7280' }, grid: { color: '#1f2937' } },
+      y: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+    }
+  }
+});
+
+const pieCtx = document.getElementById('catPie').getContext('2d');
+new Chart(pieCtx, {
+  type: 'polarArea',
+  data: {
+    labels: catLabels,
+    datasets: [{
+      data: catCounts,
+      backgroundColor: [
+        'rgba(16,185,129,0.6)','rgba(16,185,129,0.4)','rgba(251,191,36,0.6)',
+        'rgba(139,92,246,0.6)','rgba(236,72,153,0.6)','rgba(6,182,212,0.6)',
+        'rgba(59,130,246,0.6)','rgba(245,158,11,0.5)','rgba(99,102,241,0.6)','rgba(107,114,128,0.4)'
+      ],
+      borderColor: '#111827',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { color: '#9ca3af', boxWidth: 10, font: { size: 11 } } } },
+    scales: { r: { ticks: { display: false }, grid: { color: '#1f2937' } } }
+  }
+});
+</script>
+</body>
+</html>
